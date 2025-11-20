@@ -31,48 +31,61 @@ import os
 from llama_cpp import Llama
 
 llm = Llama.from_pretrained(
-	repo_id='google/gemma-3-12b-it-qat-q4_0-gguf',
-	filename='gemma-3-12b-it-q4_0.gguf',
+	repo_id='google/gemma-3-4b-it-qat-q4_0-gguf',
+	filename='gemma-3-4b-it-q4_0.gguf',
     hf_token=os.getenv('HF_TOKEN'),
     n_gpu_layers=-1,
     verbose=False,
 )
 
-# output_stream = llm.create_chat_completion(
+# output_blob = llm.create_chat_completion(
 #     messages = [
 #         {
 #             'role': 'user',
 #             'content': [
 #                 {
 #                     'type': 'text',
-#                     'text': 'Have you seen Matrix 2: Reloaded? What is the meaning of the conversation the Architect and Neo had at the near end of the movie? within 3 sentences.'
+#                     'text': 'Have you seen Matrix 2: Reloaded? What is the meaning of the conversation the Architect and Neo had at the near end of the movie? answer with 3 ~ 5 senctences.'
 #                 },
 #             ]
 #         }
 #     ],
-#     stream=True,
 # )
 
-# for chunk in output_stream:
-#     delta = chunk['choices'][0]['delta']
-#     if delta:
-#         print(delta.get('content', f'{delta}\n'), end='')
-#         if delta.get('content') == '.':
-#             print()
+# from pprint import pprint
+# pprint(output_blob.get('choices')[0].get('message').get('content'))
 
-output_blob = llm.create_chat_completion(
-    messages = [
-        {
-            'role': 'user',
-            'content': [
+
+while True:
+    try:
+        prompt = input('prompt: ')
+        if prompt.startswith('.exit'):
+            break
+        output_stream = llm.create_chat_completion(
+            messages=[
                 {
-                    'type': 'text',
-                    'text': 'Have you seen Matrix 2: Reloaded? What is the meaning of the conversation the Architect and Neo had at the near end of the movie? within 3 sentences.'
-                },
-            ]
-        }
-    ],
-)
+                    'role': 'user',
+                    'content': [
+                        {
+                            'type': 'text',
+                            'text': prompt,
+                        },
+                    ]
+                }
+            ],
+            stream=True,
+            max_tokens=2048,
+        )
+        output_words = []
+        for block in output_stream:
+            delta = block.get('choices')[0].get('delta')
+            output_words.append(delta.get('content')) if delta.get('content') else None
+            if sum(map(len, output_words)) > 90:
+                print(''.join(output_words))
+                output_words.clear()
+        if output_words:
+            print(''.join(output_words))
 
-from pprint import pprint
-pprint(output_blob.get('choices')[0].get('message').get('content'))
+    except KeyboardInterrupt:
+        break
+

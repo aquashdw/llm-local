@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,dotenv,visualstudiocode,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,dotenv,visualstudiocode,macos
 
+### JetBrains ###
+.idea
+
 ### dotenv ###
 .env
 
