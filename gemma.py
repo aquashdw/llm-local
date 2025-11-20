@@ -1,4 +1,7 @@
 from dotenv import load_dotenv
+
+from msg_factory import ChatMessage, ChatMessageContent
+
 load_dotenv()
 
 """
@@ -28,8 +31,7 @@ print(output)
 
 # llama_cpp
 import os
-from llama_cpp import Llama, ChatCompletionRequestSystemMessage, ChatCompletionRequestUserMessage, \
-    ChatCompletionRequestMessageContentPartText, ChatCompletionRequestAssistantMessage
+from llama_cpp import Llama
 
 llm = Llama.from_pretrained(
 	repo_id='google/gemma-3-4b-it-qat-q4_0-gguf',
@@ -42,20 +44,17 @@ llm = Llama.from_pretrained(
 
 
 messages=[
-    ChatCompletionRequestSystemMessage(
-        role='system',
-        content="""
+    ChatMessage(
+        'system',
+        """
         you are a general assistant. 
         you are assisting a person who wants to know essentials, and details matter only when necessary.
         So unless requested, keep your answers around 3 ~ 5 sentences, 
         pointing out the most significant information.
         start the chat session with a greeting and introduction of yourself.
-        """
+        """,
     ),
-    ChatCompletionRequestUserMessage(
-        role='user',
-        content='',
-    )
+    ChatMessage('user', '')
 ]
 
 output_blob = llm.create_chat_completion(messages=messages, max_tokens=1024)
@@ -64,10 +63,7 @@ content = output_blob.get('choices')[0].get('message').get('content')
 from pprint import pprint
 pprint(content)
 
-messages.append(ChatCompletionRequestAssistantMessage(
-    role='assistant',
-    content=content,
-))
+messages.append(ChatMessage('assistant', content))
 
 
 def flush_buffer(buffer):
@@ -82,24 +78,13 @@ while True:
         prompt = input('prompt: ')
         if prompt.startswith('.exit'):
             break
-        message = ChatCompletionRequestUserMessage(
-            role='user',
+        message = ChatMessage(
+            'user',
             content=[
-                ChatCompletionRequestMessageContentPartText(
-                    type='text',
-                    text=prompt,
-                )
+                ChatMessageContent('text', text=prompt,)
             ]
         )
-        messages.append({
-            'role': 'user',
-            'content': [
-                {
-                    'type': 'text',
-                    'text': prompt,
-                },
-            ],
-        })
+        messages.append(message)
         output_stream = llm.create_chat_completion(
             messages=messages,
             stream=True,
@@ -115,10 +100,7 @@ while True:
         if buffer:
             full_output.append(flush_buffer(buffer))
 
-        messages.append(ChatCompletionRequestAssistantMessage(
-            role='assistant',
-            content=''.join(full_output),
-        ))
+        messages.append(ChatMessage('assistant', ''.join(full_output)))
 
     except KeyboardInterrupt:
         break
