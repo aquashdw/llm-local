@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 
 from msg_factory import ChatMessage, ChatMessageContent
+from utils import flush_buffer, forget_messages
 
 load_dotenv()
 
@@ -71,51 +72,6 @@ pprint(content)
 messages.append(ChatMessage('assistant', content))
 
 
-def flush_buffer(buffer):
-    joined = ''.join(buffer)
-    print(''.join(buffer))
-    buffer.clear()
-    return joined
-
-
-def forget_messages():
-    token_counts = []
-    global messages
-    for message in messages:
-        if 'content' not in message:
-            continue
-        content = message.get('content')
-        if isinstance(content, str):
-            token_counts.append(len(llm.tokenize(message.get('content').encode('utf-8'))))
-        elif isinstance(content, list):
-            for content_part in content:
-                if content_part.get('type') != 'text':
-                    continue
-                token_counts.append(len(llm.tokenize(content_part.get('text').encode('utf-8'))))
-    token_total = sum(token_counts)
-    token_ceil = N_CTX - N_MAX_TOKENS * 2
-    if token_total <= token_ceil:
-        print('forget--------')
-        print(f'token count within range: {token_total}')
-        print('forget--------')
-        return
-
-    new_messages = [messages[0]]
-    token_removed = 0
-    idx = 1
-    while idx < len(token_counts) and token_total - token_removed > token_ceil:
-        token_removed += token_counts[idx]
-        token_removed += token_counts[idx + 1]
-        idx += 2
-
-    new_messages.extend(messages[idx:])
-    messages = new_messages
-    print('forget--------')
-    print(f'removed total {idx - 1} messages to remove {token_removed} tokens')
-    print(f'now: {token_total}')
-    print('forget--------')
-
-
 while True:
     try:
         prompt = input('prompt: ')
@@ -146,7 +102,7 @@ while True:
             full_output.append(flush_buffer(buffer))
 
         messages.append(ChatMessage('assistant', ''.join(full_output)))
-        forget_messages()
+        messages = forget_messages(llm.tokenizer(), N_CTX - N_MAX_TOKENS * 2, messages)
 
 
     except KeyboardInterrupt:
