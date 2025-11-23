@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+
+service ChatService {
+  rpc RequestChat (CompletionRequest) returns (stream CompletionResponseChunk);
+}
+
+message CompletionRequest {
+  string prompt = 1;
+}
+
+enum Role {
+  UNDEFINED = 0;
+  SYSTEM = 1;
+  USER = 2;
+  ASSISTANT = 3;
+  TOOL = 4;
+}
+
+message CompletionResponseChunk {
+  int32 idx = 1;
+  Role role = 2;
+
+  string content = 3;
+}
+
