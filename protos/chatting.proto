@@ -1,12 +1,22 @@
 syntax = "proto3";
 
-
 service ChatService {
+  rpc StartChat (StartChatRequest) returns (stream StartChatResponseChunk);
   rpc RequestChat (CompletionRequest) returns (stream CompletionResponseChunk);
 }
 
+// using empty is painful, and need for fields may arise
+message StartChatRequest {}
+message StartChatResponseChunk {
+  string id = 1;
+  int32 idx = 2;
+  Role role = 3;
+  string content = 4;
+}
+
 message CompletionRequest {
-  string prompt = 1;
+  string id = 1;
+  string prompt = 2;
 }
 
 enum Role {
