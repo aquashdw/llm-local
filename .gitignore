@@ -235,4 +235,7 @@ pyrightconfig.json
 *_pb2_grpc.py
 *_pb2.pyi
 
+# local models
+*.gguf
+
 # End of https://www.toptal.com/developers/gitignore/api/python,dotenv,visualstudiocode,macos
