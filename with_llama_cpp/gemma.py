@@ -45,7 +45,7 @@ def load_llm(n_ctx):
         filename='gemma-3-4b-it-q4_0.gguf',
         hf_token=os.getenv('HF_TOKEN'),
         n_gpu_layers=-1,
-        n_ctx=N_CTX,
+        n_ctx=n_ctx,
         verbose=False,
     )
 
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         ChatMessage('user', '')
     ]
 
-    output_blob = llm.create_chat_completion(messages=messages, max_tokens=1024)
+    output_blob = llm.create_chat_completion(messages=messages, max_tokens=N_MAX_TOKENS)
     content = output_blob.get('choices')[0].get('message').get('content')
 
     from pprint import pprint

@@ -16,7 +16,7 @@ class ChatService(ChatServiceServicer):
     def __init__(self, n_ctx: int, system: Optional[str], ):
         """
         :param n_ctx: context window size
-        :param system: system prompt for each sessions
+        :param system: system prompt for each session
         """
         self.llm = load_llm(n_ctx)
         self.messages = {}
@@ -24,8 +24,8 @@ class ChatService(ChatServiceServicer):
         if system:
             self.system = ChatMessage('system', system)
 
-        self.tokens_per_gen = n_ctx // 8
-        self.memory_limit = n_ctx - self.tokens_per_gen * 2
+        self.n_max_tokens = n_ctx // 8
+        self.memory_limit = n_ctx - self.n_max_tokens * 2
 
     def StartChat(self, request, context):
         session_id = str(uuid.uuid4())
@@ -66,7 +66,7 @@ class ChatService(ChatServiceServicer):
         output_stream = self.llm.create_chat_completion(
             messages=messages,
             stream=True,
-            max_tokens=self.tokens_per_gen,
+            max_tokens=self.n_max_tokens,
         )
         full_output = []
         for block in output_stream:
