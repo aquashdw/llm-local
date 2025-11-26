@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 
 from msg_factory import ChatMessage, ChatMessageContent
-from utils import flush_buffer, forget_messages
+from utils import flush_buffer, forget_messages_with_tokenizer
 
 load_dotenv()
 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
                 full_output.append(flush_buffer(buffer))
 
             messages.append(ChatMessage('assistant', ''.join(full_output)))
-            messages = forget_messages(llm.tokenizer(), N_CTX - N_MAX_TOKENS * 2, messages)
+            messages = forget_messages_with_tokenizer(llm.tokenizer(), N_CTX - N_MAX_TOKENS * 2, messages)
 
         except KeyboardInterrupt:
             break

@@ -9,7 +9,7 @@ from gemma import load_llm
 from chatting_pb2 import CompletionRequest, Role, CompletionResponseChunk, StartChatResponseChunk
 from chatting_pb2_grpc import ChatServiceServicer, add_ChatServiceServicer_to_server
 from msg_factory import ChatMessage, ChatMessageContent
-from utils import forget_messages
+from utils import forget_messages_with_tokenizer
 
 
 class ChatService(ChatServiceServicer):
@@ -80,7 +80,7 @@ class ChatService(ChatServiceServicer):
                 print('found block not content')
                 pprint(block)
         messages.append(ChatMessage('assistant', ''.join(full_output)))
-        forget_messages(self.llm.tokenizer(), self.memory_limit, messages)
+        forget_messages_with_tokenizer(self.llm.tokenizer(), self.memory_limit, messages)
 
 
 if __name__ == '__main__':
